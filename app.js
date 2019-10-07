@@ -16,6 +16,8 @@ console.log("Listening...");
 var SOCKET_LIST = {};
 var table = new bigboard(new board(0, 0, 150, 150, 10));
 var turn = "square";
+var lastMove = "";
+var lastWon = false;
 
 var io = require('socket.io')(serv, {});
 io.sockets.on('connection', function(socket){
@@ -27,6 +29,9 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('newMove', (data) => {
+        lastMove = data.cellNum;
+        lastWon = false;
+
         var bigCell = parseInt(data.cellNum.split("")[0]);
         var cell = parseInt(data.cellNum.split("")[1]);
 
@@ -68,6 +73,7 @@ io.sockets.on('connection', function(socket){
             var b = table.boards[i].cells;
             if(table.boards[i].won === 'none' && ((b[0] === b[1] && b[1] === b[2] && b[0] != 'none') || (b[3] === b[4] && b[4] === b[5] && b[3] != 'none') || (b[6] === b[7] && b[7] === b[8] && b[6] != 'none') || (b[0] === b[3] && b[3] === b[6] && b[0] != 'none') || (b[1] === b[4] && b[4] === b[7] && b[1] != 'none') || (b[2] === b[5] && b[5] === b[8] && b[2] != 'none') || (b[0] === b[4] && b[4] === b[8] && b[0] != 'none') || (b[2] === b[4] && b[4] === b[6] && b[2] != 'none'))){
                 table.boards[i].won = turn;
+                lastWon = true;
                 for(var j in SOCKET_LIST){
                     SOCKET_LIST[j].emit('won', {
                         x: table.boards[i].x + table.table.w / 2 - ((turn === "square") ? table.table.w / 2: 0),
@@ -99,6 +105,20 @@ io.sockets.on('connection', function(socket){
         }
 
         turn = "square";
+    });
+
+    socket.on('undo', function(){
+        var n = lastMove.split("");
+        var big = parseInt(n[0]);
+        var small = parseInt(n[1]);
+        table.boards[big].won = lastWon ? "none" : table.boards[big].won;
+        table.boards[big].cells[small] = "none";
+        for(var i in SOCKET_LIST){
+            SOCKET_LIST[i].emit('undid', {
+                board: table
+            });
+        }
+        turn = (turn === "square") ? "circle" : "square";
     });
 
     socket.on('disconnect', () => {

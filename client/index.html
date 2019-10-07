@@ -13,6 +13,7 @@
         <canvas id="ctx" width="600" height="600" style="position: fixed;"></canvas>
         <div id="container" style="position: fixed; z-index: 1">
             <button type="button" name="button" id="clear" style="position: absolute; left: 610px;">Clear</button>
+            <button type="button" name="button" id="undo" style="position: absolute; left: 700px;">Undo</button>
         </div>
 
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
@@ -23,6 +24,10 @@
 
             document.getElementById('clear').onclick = function(){
                 clear();
+            }
+
+            document.getElementById('undo').onclick = function(){
+                undo();
             }
 
             socket.on('init', (data) => {
@@ -44,34 +49,6 @@
                     ctx.rect(r.x, r.y, r.w, r.h);
                     ctx.fill();
                 }
-                /*for(var i = 0; i < board.cells.length; i++){
-                    var cellx = i % 3;
-                    var celly;
-                    if(i < 3){
-                        celly = 0;
-                    }
-                    else if(i < 6){
-                        celly = 1;
-                    }
-                    else{
-                        celly = 2;
-                    }
-
-                    var x = (((board.w - board.sepDist * 2) / 3) * cellx + (board.sepDist * cellx) + ((board.w - board.sepDist * 2) / 6));
-                    var y = (((board.h - board.sepDist * 2) / 3) * celly + (board.sepDist * celly) + ((board.h - board.sepDist * 2) / 6));
-
-                    x -= (board.cells[i] === "square") ? board.sepDist : 0;
-                    y -= (board.cells[i] === "square") ? board.sepDist : 0;
-
-                    ctx.beginPath();
-                    if(board.cells[i] === "square"){
-                        ctx.rect(x, y, board.sepDist * 2, board.sepDist * 2);
-                    }
-                    else if(board.cells[i] === "circle"){
-                        ctx.arc(x, y, board.sepDist, 0, 2 * Math.PI);
-                    }
-                    ctx.fill();
-                }*/
 
                 for(var i = 0; i < board.boards.length; i++){
                     var bigX = board.boards[i].x;
@@ -146,6 +123,63 @@
                 ctx.fill();
             });
 
+            socket.on('undid', (data) => {
+                ctx.clearRect(0, 0, 600, 600);
+
+                var board = data.board;
+
+                for(var i = 0; i < board.rectangles.length; i++){
+                    ctx.beginPath();
+                    var r = board.rectangles[i];
+                    ctx.rect(r.x, r.y, r.w, r.h);
+                    ctx.fill();
+                }
+
+                for(var i = 0; i < board.boards.length; i++){
+                    var bigX = board.boards[i].x;
+                    var bigY = board.boards[i].y;
+                    if(board.boards[i].won != 'none'){
+                        ctx.beginPath();
+                        if(board.boards[i].won === 'square'){
+                            ctx.rect(board.boards[i].x, board.boards[i].y, board.boards[i].w, board.boards[i].h);
+                        }
+                        else{
+                            ctx.arc(board.boards[i].x + (board.boards[i].w / 2), board.boards[i].y + (board.boards[i].h / 2), board.boards[i].w / 2, 0, 2 * Math.PI);
+                        }
+                        ctx.fill();
+                    }
+
+                    for(var j = 0; j < board.boards[i].cells.length; j++){
+                        var cellX = j % 3;
+                        var celly;
+                        if(j < 3){
+                            cellY = 0;
+                        }
+                        else if(j < 6){
+                            cellY = 1;
+                        }
+                        else{
+                            cellY = 2;
+                        }
+
+                        var boardWidth = (board.table.w - (board.table.sepDist * 2)) / 3;
+                        var boardHeight = (board.table.h - (board.table.sepDist * 2)) / 3;
+
+                        var x = (boardWidth * cellX) + (board.table.sepDist * cellX) + bigX + (boardWidth / 2) - ((board.boards[i].cells[j] === "square") ? board.table.sepDist : 0);
+                        var y = (boardHeight * cellY) + (board.table.sepDist * cellY) + bigY + (boardHeight / 2) - ((board.boards[i].cells[j] === "square") ? board.table.sepDist : 0);
+
+                        ctx.beginPath();
+                        if(board.boards[i].cells[j] === "square"){
+                            ctx.rect(x, y, board.boards[i].sepDist * 2, board.boards[i].sepDist * 2);
+                        }
+                        else if(board.boards[i].cells[j] === "circle"){
+                            ctx.arc(x, y, board.boards[i].sepDist, 0, 2 * Math.PI);
+                        }
+                        ctx.fill();
+                    }
+                }
+            });
+
             function newMove(id){
                 socket.emit('newMove', {
                     cellNum: id
@@ -154,6 +188,10 @@
 
             function clear(){
                 socket.emit('clear');
+            }
+
+            function undo(){
+                socket.emit('undo');
             }
         </script>
     </body>
