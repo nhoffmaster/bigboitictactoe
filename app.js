@@ -18,8 +18,10 @@ var table = new bigboard(new board(0, 0, 150, 150, 10));
 var turn = "square";
 var lastMove = "";
 var lastWon = false;
+var lastLegal = -1;
 var lastTurn = null;
 var lastLastTurn = null;
+var lastSmallCell = -1;
 
 function checkIfBordering(bigCell, bigboard){
     for(var i = 0; i < bigboard.boards.length; i++){
@@ -40,25 +42,27 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('newMove', (data) => {
-        if(lastTurn === socket){
+        /*if(lastTurn === socket){
             socket.emit("twice");
             return;
-        }
-        lastLastTurn = lastTurn;
-        lastTurn = socket;
+        }*/
         var bigCell = parseInt(data.cellNum.split("")[0]);
         var cell = parseInt(data.cellNum.split("")[1]);
-        var bordering = false;
 
         if(table.smallCell != -1 && table.smallCell != bigCell && !checkIfBordering(bigCell, table)){
             socket.emit("illegal");
             return;
         }
 
+        lastLastTurn = lastTurn;
+        lastTurn = socket;
+
+        lastSmallCell = table.smallCell;
         table.smallCell = cell;
 
         lastMove = data.cellNum;
         lastWon = false;
+        lastLegal = -1;
 
         var bigX = table.boards[bigCell].x;
         var bigY = table.boards[bigCell].y;
@@ -128,6 +132,7 @@ io.sockets.on('connection', function(socket){
                         table.boards[i].legal = [4, 5, 7];
                         break;
                 }
+                lastLegal = i;
                 for(var j in SOCKET_LIST){
                     SOCKET_LIST[j].emit('won', {
                         x: table.boards[i].x + table.table.w / 2 - ((turn === "square") ? table.table.w / 2: 0),
@@ -166,6 +171,8 @@ io.sockets.on('connection', function(socket){
 
     socket.on('undo', function(){
         lastTurn = lastLastTurn;
+        table.smallCell = lastSmallCell;
+        table.boards[lastLegal].legal = [];
         var n = lastMove.split("");
         var big = parseInt(n[0]);
         var small = parseInt(n[1]);
