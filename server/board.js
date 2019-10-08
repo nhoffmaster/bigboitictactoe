@@ -49,5 +49,7 @@ module.exports = class{
         this.rectangles.push(new rectangle(this.x, height * 2 + this.sepDist, this.w, this.sepDist));
 
         this.won = "none";
+
+        this.legal = [];
     }
 }

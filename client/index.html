@@ -180,6 +180,14 @@
                 }
             });
 
+            socket.on('illegal', () => {
+                alert("Illegal move");
+            });
+
+            socket.on('twice', () => {
+                alert("Can't go twice in a row");
+            });
+
             function newMove(id){
                 socket.emit('newMove', {
                     cellNum: id

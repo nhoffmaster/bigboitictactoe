@@ -18,6 +18,16 @@ var table = new bigboard(new board(0, 0, 150, 150, 10));
 var turn = "square";
 var lastMove = "";
 var lastWon = false;
+var lastTurn;
+
+function checkIfBordering(bigCell, bigboard){
+    for(var i = 0; i < bigboard.boards.length; i++){
+        if(bigboard.boards[i].legal.includes(bigCell)){
+            return true;
+        }
+    }
+    return false;
+}
 
 var io = require('socket.io')(serv, {});
 io.sockets.on('connection', function(socket){
@@ -29,11 +39,24 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('newMove', (data) => {
-        lastMove = data.cellNum;
-        lastWon = false;
-
+        if(lastTurn === socket){
+            socket.emit("twice");
+            return;
+        }
+        lastTurn = socket;
         var bigCell = parseInt(data.cellNum.split("")[0]);
         var cell = parseInt(data.cellNum.split("")[1]);
+        var bordering = false;
+
+        if(table.smallCell != -1 && table.smallCell != bigCell && !checkIfBordering(bigCell, table)){
+            socket.emit("illegal");
+            return;
+        }
+
+        table.smallCell = cell;
+
+        lastMove = data.cellNum;
+        lastWon = false;
 
         var bigX = table.boards[bigCell].x;
         var bigY = table.boards[bigCell].y;
@@ -74,6 +97,35 @@ io.sockets.on('connection', function(socket){
             if(table.boards[i].won === 'none' && ((b[0] === b[1] && b[1] === b[2] && b[0] != 'none') || (b[3] === b[4] && b[4] === b[5] && b[3] != 'none') || (b[6] === b[7] && b[7] === b[8] && b[6] != 'none') || (b[0] === b[3] && b[3] === b[6] && b[0] != 'none') || (b[1] === b[4] && b[4] === b[7] && b[1] != 'none') || (b[2] === b[5] && b[5] === b[8] && b[2] != 'none') || (b[0] === b[4] && b[4] === b[8] && b[0] != 'none') || (b[2] === b[4] && b[4] === b[6] && b[2] != 'none'))){
                 table.boards[i].won = turn;
                 lastWon = true;
+                switch(i){
+                    case 0:
+                        table.boards[i].legal = [1, 3, 4];
+                        break;
+                    case 1:
+                        table.boards[i].legal = [0, 2, 3, 4, 5];
+                        break;
+                    case 2:
+                        table.boards[i].legal = [1, 4, 5];
+                        break;
+                    case 3:
+                        table.boards[i].legal = [0, 1, 3, 6, 7];
+                        break;
+                    case 4:
+                        table.boards[i].legal = [0, 1, 2, 3, 5, 6, 7, 8];
+                        break;
+                    case 5:
+                        table.boards[i].legal = [1, 2, 4, 7, 8];
+                        break;
+                    case 6:
+                        table.boards[i].legal = [3, 4, 7];
+                        break;
+                    case 7:
+                        table.boards[i].legal = [3, 4, 5, 6, 8];
+                        break;
+                    case 8:
+                        table.boards[i].legal = [4, 5, 7];
+                        break;
+                }
                 for(var j in SOCKET_LIST){
                     SOCKET_LIST[j].emit('won', {
                         x: table.boards[i].x + table.table.w / 2 - ((turn === "square") ? table.table.w / 2: 0),
@@ -91,10 +143,12 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('clear', () => {
+        table.smallCell = -1;
         for(var i = 0; i < table.boards.length; i++){
             for(var j = 0; j < table.boards[i].cells.length; j++){
                 table.boards[i].cells[j] = "none";
                 table.boards[i].won = 'none';
+                table.boards[i].legal = [];
             }
         }
 
