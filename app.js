@@ -24,12 +24,13 @@ var lastLastTurn = null;
 var lastSmallCell = -1;
 
 function checkIfBordering(bigCell, bigboard){
+    var bordering = [];
     for(var i = 0; i < bigboard.boards.length; i++){
         if(bigboard.boards[i].legal.includes(bigCell)){
-            return true;
+            bordering.push(i);
         }
     }
-    return false;
+    return bordering;
 }
 
 var io = require('socket.io')(serv, {});
@@ -49,7 +50,7 @@ io.sockets.on('connection', function(socket){
         var bigCell = parseInt(data.cellNum.split("")[0]);
         var cell = parseInt(data.cellNum.split("")[1]);
 
-        if(table.smallCell != -1 && table.smallCell != bigCell && !checkIfBordering(bigCell, table)){
+        if(table.smallCell != -1 && table.smallCell != bigCell && !checkIfBordering(bigCell, table).includes(table.smallCell)){
             socket.emit("illegal");
             return;
         }
