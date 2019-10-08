@@ -42,10 +42,10 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('newMove', (data) => {
-        /*if(lastTurn === socket){
+        if(lastTurn === socket){
             socket.emit("twice");
             return;
-        }*/
+        }
         var bigCell = parseInt(data.cellNum.split("")[0]);
         var cell = parseInt(data.cellNum.split("")[1]);
 
@@ -172,7 +172,9 @@ io.sockets.on('connection', function(socket){
     socket.on('undo', function(){
         lastTurn = lastLastTurn;
         table.smallCell = lastSmallCell;
-        table.boards[lastLegal].legal = [];
+        if(lastLegal != -1){
+            table.boards[lastLegal].legal = [];
+        }
         var n = lastMove.split("");
         var big = parseInt(n[0]);
         var small = parseInt(n[1]);
