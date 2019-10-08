@@ -16,6 +16,7 @@ console.log("Listening...");
 var SOCKET_LIST = {};
 var table = new bigboard(new board(0, 0, 150, 150, 10));
 var turn = "square";
+var lastGo = "square";
 var lastMove = "";
 var lastWon = false;
 var lastLegal = -1;
@@ -147,6 +148,7 @@ io.sockets.on('connection', function(socket){
             }
         }
 
+        lastGo = turn;
         turn = (turn === "square") ? "circle" : "square";
     });
 
@@ -186,7 +188,7 @@ io.sockets.on('connection', function(socket){
                 board: table
             });
         }
-        turn = (turn === "square") ? "circle" : "square";
+        turn = lastGo;
     });
 
     socket.on('disconnect', () => {
