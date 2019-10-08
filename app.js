@@ -18,7 +18,8 @@ var table = new bigboard(new board(0, 0, 150, 150, 10));
 var turn = "square";
 var lastMove = "";
 var lastWon = false;
-var lastTurn;
+var lastTurn = null;
+var lastLastTurn = null;
 
 function checkIfBordering(bigCell, bigboard){
     for(var i = 0; i < bigboard.boards.length; i++){
@@ -43,6 +44,7 @@ io.sockets.on('connection', function(socket){
             socket.emit("twice");
             return;
         }
+        lastLastTurn = lastTurn;
         lastTurn = socket;
         var bigCell = parseInt(data.cellNum.split("")[0]);
         var cell = parseInt(data.cellNum.split("")[1]);
@@ -163,6 +165,7 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('undo', function(){
+        lastTurn = lastLastTurn;
         var n = lastMove.split("");
         var big = parseInt(n[0]);
         var small = parseInt(n[1]);
