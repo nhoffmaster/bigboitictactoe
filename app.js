@@ -143,6 +143,7 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('clear', () => {
+        lastTurn = null;
         table.smallCell = -1;
         for(var i = 0; i < table.boards.length; i++){
             for(var j = 0; j < table.boards[i].cells.length; j++){
