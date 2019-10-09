@@ -55,6 +55,10 @@ io.sockets.on('connection', function(socket){
             socket.emit("illegal");
             return;
         }
+        else if(table.boards[bigCell].won != "none"){
+            socket.emit('illegal');
+            return;
+        }
 
         lastLastTurn = lastTurn;
         lastTurn = socket;
@@ -105,35 +109,7 @@ io.sockets.on('connection', function(socket){
             if(table.boards[i].won === 'none' && ((b[0] === b[1] && b[1] === b[2] && b[0] != 'none') || (b[3] === b[4] && b[4] === b[5] && b[3] != 'none') || (b[6] === b[7] && b[7] === b[8] && b[6] != 'none') || (b[0] === b[3] && b[3] === b[6] && b[0] != 'none') || (b[1] === b[4] && b[4] === b[7] && b[1] != 'none') || (b[2] === b[5] && b[5] === b[8] && b[2] != 'none') || (b[0] === b[4] && b[4] === b[8] && b[0] != 'none') || (b[2] === b[4] && b[4] === b[6] && b[2] != 'none'))){
                 table.boards[i].won = turn;
                 lastWon = true;
-                switch(i){
-                    case 0:
-                        table.boards[i].legal = [1, 3, 4];
-                        break;
-                    case 1:
-                        table.boards[i].legal = [0, 2, 3, 4, 5];
-                        break;
-                    case 2:
-                        table.boards[i].legal = [1, 4, 5];
-                        break;
-                    case 3:
-                        table.boards[i].legal = [0, 1, 3, 6, 7];
-                        break;
-                    case 4:
-                        table.boards[i].legal = [0, 1, 2, 3, 5, 6, 7, 8];
-                        break;
-                    case 5:
-                        table.boards[i].legal = [1, 2, 4, 7, 8];
-                        break;
-                    case 6:
-                        table.boards[i].legal = [3, 4, 7];
-                        break;
-                    case 7:
-                        table.boards[i].legal = [3, 4, 5, 6, 8];
-                        break;
-                    case 8:
-                        table.boards[i].legal = [4, 5, 7];
-                        break;
-                }
+                table.boards[i].legal = table.borders[i];
                 lastLegal = i;
                 for(var j in SOCKET_LIST){
                     SOCKET_LIST[j].emit('won', {
