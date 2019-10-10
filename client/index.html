@@ -4,23 +4,56 @@
         <meta charset="utf-8">
         <title></title>
         <style media="screen">
-            #container{
-                position: relative;
+            body{
+                margin: 0;
+                border: 0;
+                padding: 0;
+            }
+
+            #chat{
+                position: absolute;
+                width: 500px;
+                bottom: 0;
+                top: 0;
+                right: 0;
+                border: 2px solid black;
+                overflow-y: auto;
+            }
+
+            #text{
+                width: 500px;
+                word-wrap: break-word;
+                white-space: -moz-pre-wrap;
+                white-space: pre-wrap;
+            }
+
+            #msginput{
+                display: inline;
             }
         </style>
     </head>
-    <body>
+    <body onload="document.getElementById('msg').value = '';">
         <canvas id="ctx" width="600" height="600" style="position: fixed;"></canvas>
         <div id="container" style="position: fixed; z-index: 1">
-            <button type="button" name="button" id="clear" style="position: absolute; left: 610px;">Clear</button>
-            <button type="button" name="button" id="undo" style="position: absolute; left: 700px;">Undo</button>
+            <button type="button" name="button" id="clear" style="position: absolute; left: 530px;">Clear</button>
+            <button type="button" name="button" id="undo" style="position: absolute; left: 600px;">Undo</button>
+        </div>
+        <div id="chat">
+            <input id="msg" style="width: 495px; position: fixed;" type="text" name="msg" value="" placeholder="Enter message..." autocomplete="off">
+            <br><br>
+            <div id="text">
+
+            </div>
         </div>
 
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
         <script type="text/javascript">
             var socket = io();
 
             var ctx = document.getElementById('ctx').getContext('2d');
+
+            var name;
 
             document.getElementById('clear').onclick = function(){
                 clear();
@@ -31,6 +64,8 @@
             }
 
             socket.on('init', (data) => {
+                document.getElementById("text").innerHTML = data.chatText;
+
                 var board = data.board;
 
                 for(var i = 0; i < board.boards.length; i++){
@@ -93,6 +128,19 @@
                         ctx.fill();
                     }
                 }
+            });
+
+            do{
+                name = prompt("Enter non-empty name.");
+            }while(name == null || name == "" || name == "null");
+
+            socket.emit("joined", {
+                user: name
+            });
+
+            socket.on("join", (data) => {
+                console.log('received');
+                document.getElementById("text").innerHTML = data.message + "<br><br>" + document.getElementById("text").innerHTML;
             });
 
             socket.on('turnTaken', (data) => {
@@ -186,6 +234,22 @@
 
             socket.on('twice', () => {
                 alert("Can't go twice in a row");
+            });
+
+            socket.on("chatReceived", (data) => {
+                document.getElementById("text").innerHTML = data.sender + ": " + data.message + "<br><br>" + document.getElementById("text").innerHTML;
+            });
+
+            $('#msg').on('keyup', function(e){
+                if (e.keyCode === 13){
+                    if(document.getElementById('msg').value){
+                        socket.emit("chat", {
+                            message: document.getElementById('msg').value,
+                            user: name
+                        });
+                        document.getElementById('msg').value = "";
+                    }
+                }
             });
 
             function newMove(id){

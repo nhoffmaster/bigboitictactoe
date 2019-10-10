@@ -1,12 +1,14 @@
 const express = require('express');
 const app = express();
 const serv = require('http').Server(app);
+const fs  = require('fs');
 
 const board = require('./server/board');
 const bigboard = require('./server/bigboard');
 
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/client/index.html');
+
 });
 app.use('/client', express.static(__dirname + '/client'));
 
@@ -24,6 +26,8 @@ var lastTurn = null;
 var lastLastTurn = null;
 var lastSmallCell = -1;
 
+var chatText = "";
+
 function checkIfBordering(bigCell, bigboard){
     var bordering = [];
     for(var i = 0; i < bigboard.boards.length; i++){
@@ -40,7 +44,18 @@ io.sockets.on('connection', function(socket){
     SOCKET_LIST[socket.id] = socket;
 
     socket.emit('init', {
-        board: table
+        board: table,
+        chatText: chatText
+    });
+
+    socket.on("joined", (data) => {
+        for(var i in SOCKET_LIST){
+            SOCKET_LIST[i].emit("join", {
+                message: "<i><b>" + data.user + "</b> has joined the server</i>"
+            });
+        }
+        chatText = "<i><b>" + data.user + "</b> has joined the server</i><br><br>" + chatText;
+        SOCKET_LIST[socket.id].name = data.user;
     });
 
     socket.on('newMove', (data) => {
@@ -178,8 +193,29 @@ io.sockets.on('connection', function(socket){
         turn = lastGo;
     });
 
+    socket.on("chat", (data) => {
+        for(var i in SOCKET_LIST){
+            SOCKET_LIST[i].emit("chatReceived", {
+                sender: data.user,
+                message: data.message
+            });
+        }
+        chatText = data.user + ": " + data.message + "<br><br>" + chatText;
+    });
+
     socket.on('disconnect', () => {
+        var name = SOCKET_LIST[socket.id].name;
         delete SOCKET_LIST[socket.id];
+        if(name && name != "null" && name != undefined && name != "undefined"){
+            for(var i in SOCKET_LIST){
+                socket.emit("join", {
+                    message: "<i><b>" + name + "</b> has left the server</i>"
+                });
+            }
+        }
+        if(name && name != "null" && name != undefined && name != "undefined"){
+            chatText = "<i><b>" + name + "</b> has left the server</i><br><br>" + chatText;
+        }
     });
 
     console.log("Socket connection");
