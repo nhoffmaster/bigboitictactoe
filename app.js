@@ -208,7 +208,7 @@ io.sockets.on('connection', function(socket){
         delete SOCKET_LIST[socket.id];
         if(name && name != "null" && name != undefined && name != "undefined"){
             for(var i in SOCKET_LIST){
-                socket.emit("join", {
+                SOCKET_LIST[i].emit("join", {
                     message: "<i><b>" + name + "</b> has left the server</i>"
                 });
             }
