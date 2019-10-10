@@ -110,6 +110,17 @@ io.sockets.on('connection', function(socket){
                 table.boards[i].won = turn;
                 lastWon = true;
                 table.boards[i].legal = table.borders[i];
+
+                for(var j = 0; j < table.boards.length; j++){
+                    for(var k = 0; k < table.boards.length; k++){
+                        for(var l = 0; l < table.boards[k].legal.length; l++){
+                            if(!table.boards[j].legal.includes(table.boards[k].legal[l])){
+                                table.boards[j].legal.push(table.boards[k].legal[l]);
+                            }
+                        }
+                    }
+                }
+
                 lastLegal = i;
                 for(var j in SOCKET_LIST){
                     SOCKET_LIST[j].emit('won', {
