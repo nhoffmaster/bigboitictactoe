@@ -12,7 +12,7 @@
 
             #chat{
                 position: absolute;
-                width: 500px;
+                width: 40%;
                 bottom: 0;
                 top: 0;
                 right: 0;
@@ -33,13 +33,15 @@
         </style>
     </head>
     <body onload="document.getElementById('msg').value = '';">
-        <canvas id="ctx" width="600" height="600" style="position: fixed;"></canvas>
-        <div id="container" style="position: fixed; z-index: 1">
-            <button type="button" name="button" id="clear" style="position: absolute; left: 530px;">Clear</button>
-            <button type="button" name="button" id="undo" style="position: absolute; left: 600px;">Undo</button>
+        <canvas id="ctx" width="490" height="490" style="position: static; padding:0;"></canvas>
+        <div id="container" style="position: static; z-index: 1">
+            <br>
+            <button type="button" name="button" id="clear">Clear Board</button>
+            <button type="button" name="button" id="undo">Undo Move</button>
+            <button type="button" name="button" id="clearChat">Clear Chat</button>
         </div>
         <div id="chat">
-            <input id="msg" style="width: 495px; position: fixed;" type="text" name="msg" value="" placeholder="Enter message..." autocomplete="off">
+            <input id="msg" style="width: 40%; position: fixed;" type="text" name="msg" value="" placeholder="Enter message..." autocomplete="off">
             <br><br>
             <div id="text">
 
@@ -137,6 +139,14 @@
             socket.emit("joined", {
                 user: name
             });
+
+            document.getElementById("clearChat").onclick = function(){
+                var pwd = prompt("Enter password");
+                socket.emit("clearChat", {
+                    pwd: pwd,
+                    name: name
+                });
+            }
 
             socket.on("join", (data) => {
                 console.log('received');
@@ -238,6 +248,16 @@
 
             socket.on("chatReceived", (data) => {
                 document.getElementById("text").innerHTML = data.sender + ": " + data.message + "<br><br>" + document.getElementById("text").innerHTML;
+            });
+
+            socket.on("chatCleared", (data) => {
+                if(data.cleared){
+                    document.getElementById("text").innerHTML = data.message;
+                }
+                else{
+                    document.getElementById("text").innerHTML = data.message + "<br><br>" + document.getElementById("text").innerHTML;
+                }
+
             });
 
             $('#msg').on('keyup', function(e){

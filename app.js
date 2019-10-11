@@ -203,6 +203,26 @@ io.sockets.on('connection', function(socket){
         chatText = data.user + ": " + data.message + "<br><br>" + chatText;
     });
 
+    socket.on("clearChat", (data) => {
+        var cleared, message;
+        if(data.pwd === "the chat has been cleared"){
+            cleared = true;
+            chatText = "";
+            message = "<i><b>" + data.name + "</b> has cleared the chat</i>";
+        }
+        else{
+            cleared = false;
+            message = "<i><b>" + data.name + "</b> has failed to clear the chat because they are an absolute idiot</i>";
+        }
+        for(var i in SOCKET_LIST){
+            SOCKET_LIST[i].emit("chatCleared", {
+                cleared: cleared,
+                message: message
+            });
+        }
+        chatText = message + "<br><br>" + chatText;
+    });
+
     socket.on('disconnect', () => {
         var name = SOCKET_LIST[socket.id].name;
         delete SOCKET_LIST[socket.id];
