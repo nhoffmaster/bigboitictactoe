@@ -220,3 +220,15 @@ io.sockets.on('connection', function(socket){
 
     console.log("Socket connection");
 });
+
+var chatCleared = false;
+setInterval(() => {
+    time = new Date();
+    if(time.getHours() == 11 && !chatCleared){
+        chatCleared = true;
+        chatText = "";
+    }
+    else if(time.getHours() != 11 && chatCleared){
+        chatCleared = false;
+    }
+}, 1000);
