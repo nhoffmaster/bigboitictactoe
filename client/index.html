@@ -279,7 +279,10 @@
             }
 
             function clear(){
-                socket.emit('clear');
+                var confirmation = confirm("Are you sure you want to clear the board?");
+                if(confirmation){
+                    socket.emit('clear');
+                }
             }
 
             function undo(){
