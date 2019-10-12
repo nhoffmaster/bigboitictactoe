@@ -25,6 +25,7 @@
                 word-wrap: break-word;
                 white-space: -moz-pre-wrap;
                 white-space: pre-wrap;
+                font-family: Arial, Helvetica, sans-serif;
             }
 
             #msginput{
@@ -149,7 +150,6 @@
             }
 
             socket.on("join", (data) => {
-                console.log('received');
                 document.getElementById("text").innerHTML = data.message + "<br><br>" + document.getElementById("text").innerHTML;
             });
 
