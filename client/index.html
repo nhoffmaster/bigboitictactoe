@@ -10,6 +10,14 @@
                 padding: 0;
             }
 
+            .notYou{
+                color: red;
+            }
+
+            .you{
+                color: blue;
+            }
+
             #chat{
                 position: absolute;
                 width: 40%;
@@ -150,7 +158,12 @@
             }
 
             socket.on("join", (data) => {
-                document.getElementById("text").innerHTML = data.message + "<br><br>" + document.getElementById("text").innerHTML;
+                var className;
+                if(name == data.name)
+                    className = "you";
+                else
+                    className = "notYou";
+                document.getElementById("text").innerHTML = "<i><b class='" + className + "'>" + data.message + "<br><br>" + document.getElementById("text").innerHTML;
             });
 
             socket.on('turnTaken', (data) => {
@@ -160,7 +173,12 @@
                 else
                     ctx.arc(data.x, data.y, data.w / 2, 0, 2 * Math.PI);
                 ctx.fill();
-                document.getElementById("text").innerHTML = "<i><b>" + data.name + "</b> has placed a " + data.turn + " in Board " + data.board + ", Cell " + data.cell + "</i><br><br>" + document.getElementById("text").innerHTML;
+                var className;
+                if(name == data.name)
+                    className = "you";
+                else
+                    className = "notYou";
+                document.getElementById("text").innerHTML = "<i><b class='" + className + "'>" + data.name + "</b> has placed a " + data.turn + " in Board " + data.board + ", Cell " + data.cell + "</i><br><br>" + document.getElementById("text").innerHTML;
             });
 
             socket.on('boardCleared', (data) => {
@@ -171,7 +189,12 @@
                     ctx.rect(r.x, r.y, r.w, r.h);
                     ctx.fill();
                 }
-                document.getElementById("text").innerHTML = "<i><b>" + data.name + "</b> has cleared the board</i><br><br>" + document.getElementById("text").innerHTML;
+                var className;
+                if(name == data.name)
+                    className = "you";
+                else
+                    className = "notYou";
+                document.getElementById("text").innerHTML = "<i><b class='" + className + "'>" + data.name + "</b> has cleared the board</i><br><br>" + document.getElementById("text").innerHTML;
             });
 
             socket.on('won', (data) => {
@@ -249,15 +272,26 @@
             });
 
             socket.on("chatReceived", (data) => {
-                document.getElementById("text").innerHTML = data.sender + ": " + data.message + "<br><br>" + document.getElementById("text").innerHTML;
+                var className;
+                if(name == data.sender)
+                    className = "you";
+                else
+                    className = "notYou";
+                document.getElementById("text").innerHTML = "<b class='" + className + "'>" + data.sender + "</b>: " + data.message + "<br><br>" + document.getElementById("text").innerHTML;
             });
 
             socket.on("chatCleared", (data) => {
+                var className;
+                if(name == data.name)
+                    className = "you";
+                else
+                    className = "notYou";
+
                 if(data.cleared){
-                    document.getElementById("text").innerHTML = data.message;
+                    document.getElementById("text").innerHTML = "<i><b class='" + className + "'>" + data.message;
                 }
                 else{
-                    document.getElementById("text").innerHTML = data.message + "<br><br>" + document.getElementById("text").innerHTML;
+                    document.getElementById("text").innerHTML = "<i><b class='" + className + "'>" + data.message + "<br><br>" + document.getElementById("text").innerHTML;
                 }
 
             });

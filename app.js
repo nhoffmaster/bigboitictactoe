@@ -51,10 +51,11 @@ io.sockets.on('connection', function(socket){
     socket.on("joined", (data) => {
         for(var i in SOCKET_LIST){
             SOCKET_LIST[i].emit("join", {
-                message: "<i><b>" + data.user + "</b> has joined the server</i>"
+                message: data.user + "</b> has joined the server</i>",
+                name: data.user
             });
         }
-        chatText = "<i><b>" + data.user + "</b> has joined the server</i><br><br>" + chatText;
+        chatText = "<i><b class='notYou'>" + data.user + "</b> has joined the server</i><br><br>" + chatText;
         SOCKET_LIST[socket.id].name = data.user;
     });
 
@@ -120,7 +121,7 @@ io.sockets.on('connection', function(socket){
             });
         }
 
-        chatText = "<i><b>" + socket.name + "</b> has placed a " + turn + " in Board " + bigCell + ", Cell " + cell + "</i><br><br>" + chatText;
+        chatText = "<i><b class='notYou'>" + socket.name + "</b> has placed a " + turn + " in Board " + bigCell + ", Cell " + cell + "</i><br><br>" + chatText;
 
         table.boards[bigCell].cells[cell] = turn;
 
@@ -177,7 +178,7 @@ io.sockets.on('connection', function(socket){
             });
         }
 
-        chatText = "<i><b>" + socket.name + "</b> has cleared the board</i><br><br>" + chatText;
+        chatText = "<i><b class='notYou'>" + socket.name + "</b> has cleared the board</i><br><br>" + chatText;
 
         turn = "square";
     });
@@ -208,7 +209,7 @@ io.sockets.on('connection', function(socket){
                 message: data.message
             });
         }
-        chatText = data.user + ": " + data.message + "<br><br>" + chatText;
+        chatText = "<b class='notYou'>" + data.user + "</b>: " + data.message + "<br><br>" + chatText;
     });
 
     socket.on("clearChat", (data) => {
@@ -216,19 +217,20 @@ io.sockets.on('connection', function(socket){
         if(data.pwd === "the chat has been cleared"){
             cleared = true;
             chatText = "";
-            message = "<i><b>" + data.name + "</b> has cleared the chat</i>";
+            message = data.name + "</b> has cleared the chat</i>";
         }
         else{
             cleared = false;
-            message = "<i><b>" + data.name + "</b> has failed to clear the chat because they are an absolute idiot</i>";
+            message = data.name + "</b> has failed to clear the chat because they are an absolute idiot</i>";
         }
         for(var i in SOCKET_LIST){
             SOCKET_LIST[i].emit("chatCleared", {
                 cleared: cleared,
-                message: message
+                message: message,
+                name: data.name
             });
         }
-        chatText = message + "<br><br>" + chatText;
+        chatText = "<i><b class='notYou'>" + message + "<br><br>" + chatText;
     });
 
     socket.on('disconnect', () => {
@@ -237,12 +239,13 @@ io.sockets.on('connection', function(socket){
         if(name && name != "null" && name != undefined && name != "undefined"){
             for(var i in SOCKET_LIST){
                 SOCKET_LIST[i].emit("join", {
-                    message: "<i><b>" + name + "</b> has left the server</i>"
+                    message: name + "</b> has left the server</i>",
+                    name: name
                 });
             }
         }
         if(name && name != "null" && name != undefined && name != "undefined"){
-            chatText = "<i><b>" + name + "</b> has left the server</i><br><br>" + chatText;
+            chatText = "<i><b class='notYou'>" + name + "</b> has left the server</i><br><br>" + chatText;
         }
     });
 
