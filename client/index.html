@@ -160,6 +160,7 @@
                 else
                     ctx.arc(data.x, data.y, data.w / 2, 0, 2 * Math.PI);
                 ctx.fill();
+                document.getElementById("text").innerHTML = "<i><b>" + data.name + "</b> has placed a " + data.turn + " in Board " + data.board + ", Cell " + data.cell + "</i><br><br>" + document.getElementById("text").innerHTML;
             });
 
             socket.on('boardCleared', (data) => {

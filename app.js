@@ -113,9 +113,14 @@ io.sockets.on('connection', function(socket){
                 x: x,
                 y: y,
                 w: table.table.sepDist * 2,
-                h: table.table.sepDist * 2
+                h: table.table.sepDist * 2,
+                name: socket.name,
+                board: bigCell,
+                cell: cell
             });
         }
+
+        chatText = "<i><b>" + socket.name + "</b> has placed a " + turn + " in Board " + bigCell + ", Cell " + cell + "</i><br><br>" + chatText;
 
         table.boards[bigCell].cells[cell] = turn;
 
