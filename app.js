@@ -172,9 +172,12 @@ io.sockets.on('connection', function(socket){
 
         for(var i in SOCKET_LIST){
             SOCKET_LIST[i].emit('boardCleared', {
-                board: table
+                board: table,
+                name: socket.name
             });
         }
+
+        chatText = "<i><b>" + socket.name + "</b> has cleared the board</i><br><br>" + chatText;
 
         turn = "square";
     });

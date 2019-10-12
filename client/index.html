@@ -171,6 +171,7 @@
                     ctx.rect(r.x, r.y, r.w, r.h);
                     ctx.fill();
                 }
+                document.getElementById("text").innerHTML = "<i><b>" + data.name + "</b> has cleared the board</i><br><br>" + document.getElementById("text").innerHTML;
             });
 
             socket.on('won', (data) => {
